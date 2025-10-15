@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akıllı Yoklama Sistemi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div id="app"></div>
+
+  <script>
+    const LOCATION_CHECK_ENABLED = false;
+    
+    const classLocation = {
+      lat: 38.454113,
+      lng: 27.202612,
+      radius: 100,
+      name: 'Yaşar Üniversitesi, Selçuk Yaşar Kampüsü'
+    };
+
+    const dersInfo = { 
+      dersKodu: 'ENGR 4451', 
+      dersAdi: 'Mühendislik İçin Üretken Yapay Zeka', 
+      toplamHafta: 14 
+    };
+
+    let state = {
+      view: 'login',
+      currentUser: null,
+      currentWeek: 1,
+      qrToken: '',
+      qrExpiry: null,
+      message: '',
+      loginEmail: '',
+      loginPassword: '',
+      timeLeft: 0,
+      userLocation: null,
+      showInvalidateModal: false,
+      selectedStudent: null,
+      registerView: false,
+      registerName: '',
+      registerSurname: '',
+      registerNo: '',
+      registerCode: '',
+      deviceId: localStorage.getItem('deviceId') || generateDeviceId(),
+      students: [
+        { id: 1, no: '18070003013', ad: 'İBRAHİM', soyad: 'GÜLTEKİN', bolum: 'İNŞAAT MÜH.', team: 1, email: '18070003013@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 2, no: '19070001053', ad: 'ELİF EMİNE', soyad: 'GÜNAL', bolum: 'BİLGİSAYAR MÜH.', team: 2, email: '19070001053@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 3, no: '19070008012', ad: 'ERK YANKI', soyad: 'URAL', bolum: 'MAKİNE MÜH.', team: 2, email: '19070008012@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 4, no: '20070001057', ad: 'ERCE', soyad: 'ÖZKAN', bolum: 'BİLGİSAYAR MÜH.', team: 5, email: '20070001057@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 5, no: '20070002048', ad: 'İPEK', soyad: 'ATİŞ', bolum: 'ENDÜSTRİ MÜH.', team: 7, email: '20070002048@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 6, no: '20070007004', ad: 'İDİL ECE', soyad: 'CEVAHİR', bolum: 'ENERJİ SİSTEMLERİ MÜH.', team: 7, email: '20070007004@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 7, no: '20070008016', ad: 'SUDE', soyad: 'ONFİDAN', bolum: 'MAKİNE MÜH.', team: 6, email: '20070008016@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 8, no: '20070008017', ad: 'ÖMER', soyad: 'ARICA', bolum: 'MAKİNE MÜH.', team: 2, email: '20070008017@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 9, no: '20070008019', ad: 'SELİM MERT', soyad: 'KIRCAALİLİ', bolum: 'MAKİNE MÜH.', team: 6, email: '20070008019@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 10, no: '20070008029', ad: 'BERİL DERAN', soyad: 'GÜRBÜZ', bolum: 'MAKİNE MÜH.', team: 4, email: '20070008029@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 11, no: '21070001004', ad: 'ALİ HAKTAN', soyad: 'SIĞIN', bolum: 'BİLGİSAYAR MÜH.', team: 12, email: '21070001004@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 12, no: '21070001051', ad: 'ARDA', soyad: 'ALTUNHAN', bolum: 'BİLGİSAYAR MÜH.', team: 5, email: '21070001051@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 13, no: '21070001070', ad: 'EKREM', soyad: 'TEMEL', bolum: 'BİLGİSAYAR MÜH.', team: 5, email: '21070001070@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 14, no: '21070002005', ad: 'NESRİN', soyad: 'ŞENTÜRK', bolum: 'ENDÜSTRİ MÜH.', team: 11, email: '21070002005@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 15, no: '21070002025', ad: 'BATUHAN', soyad: 'ŞİŞMAN', bolum: 'ENDÜSTRİ MÜH.', team: 11, email: '21070002025@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 16, no: '21070005027', ad: 'KIVANÇ EFE', soyad: 'ERGÖNÜL', bolum: 'ELEKTRİK-ELEKTRONİK MÜH.', team: 2, email: '21070005027@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 17, no: '21070005030', ad: 'OĞUZ', soyad: 'KOYUCAN', bolum: 'ELEKTRİK-ELEKTRONİK MÜH.', team: 8, email: '21070005030@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 18, no: '21070005042', ad: 'ZEYNEP', soyad: 'ARSLANBUĞA', bolum: 'ELEKTRİK-ELEKTRONİK MÜH.', team: 2, email: '21070005042@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 19, no: '21070007001', ad: 'BESTE', soyad: 'TEKİN', bolum: 'ENERJİ SİSTEMLERİ MÜH.', team: 7, email: '21070007001@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 20, no: '21070007004', ad: 'EKİN', soyad: 'ALTUNKAYA', bolum: 'ENERJİ SİSTEMLERİ MÜH.', team: 10, email: '21070007004@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 21, no: '21070008009', ad: 'EMRE', soyad: 'ERİŞİR', bolum: 'MAKİNE MÜH.', team: 8, email: '21070008009@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 22, no: '21070008014', ad: 'İSMAİL CANBERK', soyad: 'DEMİRKAN', bolum: 'MAKİNE MÜH.', team: 3, email: '21070008014@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 23, no: '21070008016', ad: 'CAN', soyad: 'GİRGİN', bolum: 'MAKİNE MÜH.', team: 9, email: '21070008016@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 24, no: '21070008017', ad: 'KEREM', soyad: 'EROĞLU', bolum: 'MAKİNE MÜH.', team: 1, email: '21070008017@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 25, no: '21070008027', ad: 'ARMAĞAN', soyad: 'SOYLU', bolum: 'MAKİNE MÜH.', team: 4, email: '21070008027@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 26, no: '21070008033', ad: 'ALP SERKAN', soyad: 'MERKİT', bolum: 'MAKİNE MÜH.', team: 8, email: '21070008033@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 27, no: '21070008034', ad: 'ATAKAN', soyad: 'DİNÇER', bolum: 'MAKİNE MÜH.', team: 3, email: '21070008034@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 28, no: '21070008206', ad: 'DEMET', soyad: 'BÜYÜKTAŞ', bolum: 'MAKİNE MÜH.', team: 4, email: '21070008206@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 29, no: '22070001041', ad: 'GÜRKAN', soyad: 'EROĞLU', bolum: 'BİLGİSAYAR MÜH.', team: 1, email: '22070001041@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 30, no: '22070001055', ad: 'EMRE EFE', soyad: 'YÜKSEL', bolum: 'BİLGİSAYAR MÜH.', team: 12, email: '22070001055@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 31, no: '22070002015', ad: 'SÜLEYMAN BATU', soyad: 'SARI', bolum: 'ENDÜSTRİ MÜH.', team: 10, email: '22070002015@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 32, no: '22070002047', ad: 'KADİR EMRE', soyad: 'GÜNEŞ', bolum: 'ENDÜSTRİ MÜH.', team: 10, email: '22070002047@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 33, no: '22070005040', ad: 'TOPRAK', soyad: 'TUNCER', bolum: 'ELEKTRİK-ELEKTRONİK MÜH.', team: 6, email: '22070005040@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 34, no: '22070005053', ad: 'EMRE CAN', soyad: 'HEKİMOĞLU', bolum: 'ELEKTRİK-ELEKTRONİK MÜH.', team: 6, email: '22070005053@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 35, no: '22070007014', ad: 'ILGAR', soyad: 'ŞENOL', bolum: 'ENERJİ SİSTEMLERİ MÜH.', team: 10, email: '22070007014@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 36, no: '22070008017', ad: 'EDA NUR', soyad: 'ÇALIŞKAN', bolum: 'MAKİNE MÜH.', team: 9, email: '22070008017@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 37, no: '22070008021', ad: 'SAMİ BERK', soyad: 'ŞAHİN', bolum: 'MAKİNE MÜH.', team: 3, email: '22070008021@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 38, no: '22070008026', ad: 'DENİZ', soyad: 'ÜNVER', bolum: 'MAKİNE MÜH.', team: 9, email: '22070008026@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 39, no: '22070008034', ad: 'AYKAN', soyad: 'KANLI', bolum: 'MAKİNE MÜH.', team: 4, email: '22070008034@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 40, no: '22070008043', ad: 'DENİZ', soyad: 'KARATEPE', bolum: 'MAKİNE MÜH.', team: 9, email: '22070008043@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 41, no: '22070003022', ad: 'AYŞEGÜL', soyad: 'KARINYARICI', bolum: 'İNŞAAT MÜH.', team: 1, email: '22070003022@ogrenci.edu.tr', yoklamalar: [], devices: {} },
+        { id: 42, no: '21070001046', ad: 'AHMET ÖZGÜR', soyad: 'KORKMAZ', bolum: 'BİLGİSAYAR MÜH.', team: 12, email: '21070001046@ogrenci.edu.tr', yoklamalar: [], devices: {} }
+      ]
+    };
+
+    function generateDeviceId() {
+      const id = 'device_' + Math.random().toString(36).substr(2, 9) + Date.now();
+      localStorage.setItem('deviceId', id);
+      return id;
+    }
+
+    function calculateAttendance(student) {
+      const rate = (student.yoklamalar.length / dersInfo.toplamHafta) * 100;
+      const remaining = dersInfo.toplamHafta - state.currentWeek;
+      const maxPossible = student.yoklamalar.length + remaining;
+      const maxRate = (maxPossible / dersInfo.toplamHafta) * 100;
+      
+      let status = 'VAR', color = 'bg-green-100 text-green-800', rowColor = '';
+      if (rate < 70) {
+        status = 'YOK';
+        color = 'bg-red-100 text-red-800';
+        rowColor = 'bg-red-50';
+      } else if (maxRate < 75) {
+        rowColor = 'bg-orange-50';
+      }
+      return { rate: rate.toFixed(1), status, color, rowColor };
+    }
+
+    function exportToExcel() {
+      let csv = '\ufeff';
+      csv += 'Öğrenci No\tAd\tSoyad\tBölüm\tTakım\t';
+      for (let i = 1; i <= 14; i++) csv += `Hafta ${i}\t`;
+      csv += 'Toplam Katılım\tYüzde\tDurum\n';
+      
+      state.students.forEach(student => {
+        csv += `${student.no}\t${student.ad}\t${student.soyad}\t${student.bolum}\t${student.team}\t`;
+        for (let i = 1; i <= 14; i++) csv += `${student.yoklamalar.includes(i) ? 'VAR' : 'YOK'}\t`;
+        const attendance = calculateAttendance(student);
+        csv += `${student.yoklamalar.length}\t%${attendance.rate}\t${attendance.status}\n`;
+      });
+      
+      const blob = new Blob([csv], { type: 'text/tab-separated-values;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `yoklama_${dersInfo.dersKodu.replace(' ', '_')}_${new Date().toISOString().split('T')[0]}.xls`;
+      link.click();
+      state.message = '✅ Excel dosyası indirildi!';
+      render();
+    }
+
+    function generateQRCode() {
+      const token = 'QR' + Math.random().toString(36).substr(2, 6).toUpperCase();
+      const expiry = new Date(Date.now() + 10 * 60 * 1000);
+      state.qrToken = token;
+      state.qrExpiry = expiry;
+      state.message = '✅ QR Kod oluşturuldu!';
+      render();
+      startTimer();
+    }
+
+    function startTimer() {
+      setInterval(() => {
+        if (state.qrExpiry) {
+          const remaining = Math.max(0, Math.floor((state.qrExpiry - new Date()) / 1000));
+          state.timeLeft = remaining;
+          if (remaining === 0) state.qrToken = '';
+          const timerEl = document.getElementById('qr-timer');
+          if (timerEl && state.timeLeft > 0) {
+            timerEl.textContent = `⏱️ ${Math.floor(state.timeLeft / 60)}:${(state.timeLeft % 60).toString().padStart(2, '0')}`;
+          }
+        }
+      }, 1000);
+    }
+
+    async function handleRegister() {
+      if (!state.registerName || !state.registerSurname || !state.registerNo) {
+        state.message = '❌ Lütfen tüm bilgileri giriniz!';
+        render();
+        return;
+      }
+      
+      if (!state.qrToken || new Date() > state.qrExpiry) {
+        state.message = '❌ Geçerli QR kod yok!';
+        render();
+        return;
+      }
+
+      if (state.registerCode !== state.qrToken) {
+        state.message = '❌ Girdiğiniz kod yanlış!';
+        render();
+        return;
+      }
+
+      const student = state.students.find(s => 
+        s.ad.toLowerCase() === state.registerName.toLowerCase() && 
+        s.soyad.toLowerCase() === state.registerSurname.toLowerCase() &&
+        s.no === state.registerNo
+      );
+
+      if (student) {
+        if (student.devices[state.currentWeek] && student.devices[state.currentWeek] !== state.deviceId) {
+          state.message = '❌ Bu hafta başka bir cihazdan yoklama yapılmış!';
+          render();
+          return;
+        }
+
+        if (student.yoklamalar.includes(state.currentWeek)) {
+          state.message = '⚠️ Bu hafta zaten yoklamaya katıldınız!';
+          render();
+          return;
+        }
+        
+        student.yoklamalar.push(state.currentWeek);
+        student.yoklamalar.sort((a,b) => a-b);
+        student.devices[state.currentWeek] = state.deviceId;
+        
+        state.message = `✅ Yoklamanız kaydedildi, ${student.ad} ${student.soyad}!`;
+        state.registerName = '';
+        state.registerSurname = '';
+        state.registerNo = '';
+        state.registerCode = '';
+      } else {
+        state.message = '❌ Bilgileriniz sistemde bulunamadı!';
+      }
+      render();
+    }
+
+    function handleLogin() {
+      if (state.loginEmail === 'hoca@universite.edu.tr') {
+        state.currentUser = { role: 'teacher', name: 'Öğretim Üyesi' };
+        state.view = 'teacher';
+        state.message = '';
+      } else if (state.loginEmail.includes('@ogrenci.edu.tr')) {
+        const student = state.students.find(s => s.email === state.loginEmail);
+        if (student) {
+          state.currentUser = { role: 'student', ...student };
+          state.view = 'student';
+          state.message = '';
+        } else {
+          state.message = '❌ Bu email sistemde kayıtlı değil!';
+        }
+      } else {
+        state.message = '❌ Lütfen okul email adresi kullanın!';
+      }
+      render();
+    }
+
+    async function handleAttendance() {
+      if (!state.qrToken || new Date() > state.qrExpiry) {
+        state.message = '❌ Geçerli QR kod yok!';
+        render();
+        return;
+      }
+
+      const student = state.students.find(s => s.email === state.currentUser.email);
+      if (student.devices[state.currentWeek] && student.devices[state.currentWeek] !== state.deviceId) {
+        state.message = '❌ Bu hafta başka bir cihazdan yoklama yapılmış!';
+        render();
+        return;
+      }
+
+      if (state.currentUser.yoklamalar.includes(state.currentWeek)) {
+        state.message = '⚠️ Bu hafta zaten yoklamaya katıldınız!';
+        render();
+        return;
+      }
+      
+      const updatedStudent = state.students.find(s => s.email === state.currentUser.email);
+      updatedStudent.yoklamalar.push(state.currentWeek);
+      updatedStudent.yoklamalar.sort((a,b) => a-b);
+      updatedStudent.devices[state.currentWeek] = state.deviceId;
+      
+      state.currentUser.yoklamalar = [...updatedStudent.yoklamalar];
+      state.message = '✅ Yoklamanız başarıyla kaydedildi!';
+      render();
+    }
+
+    function invalidateAttendance(student) {
+      state.selectedStudent = student;
+      state.showInvalidateModal = true;
+      render();
+    }
+
+    function confirmInvalidate() {
+      const student = state.students.find(s => s.id === state.selectedStudent.id);
+      student.yoklamalar = student.yoklamalar.filter(h => h !== state.currentWeek);
+      delete student.devices[state.currentWeek];
+      
+      state.message = `✅ ${state.selectedStudent.ad} ${state.selectedStudent.soyad} öğrencisinin ${state.currentWeek}. hafta yoklaması geçersiz sayıldı!`;
+      state.showInvalidateModal = false;
+      state.selectedStudent = null;
+      render();
+    }
+
+    function getTeamStats() {
+      const teams = {};
+      state.students.forEach(s => {
+        if (!teams[s.team]) teams[s.team] = { total: 0, attended: 0 };
+        teams[s.team].total++;
+        if (s.yoklamalar.includes(state.currentWeek)) teams[s.team].attended++;
+      });
+      
+      let presentTeams = 0;
+      Object.values(teams).forEach(team => {
+        if (team.attended > team.total / 2) presentTeams++;
+      });
+      
+      return { totalTeams: Object.keys(teams).length, presentTeams };
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      
+      if (state.view === 'login') {
+        if (state.registerView) {
+          app.innerHTML = `
+            <div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+              <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+                <div class="text-center mb-8">
+                  <div class="bg-green-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                  </div>
+                  <h1 class="text-3xl font-bold text-gray-800 mb-2">Yoklama Girişi</h1>
+                  <p class="text-gray-600">${dersInfo.dersKodu} - ${state.currentWeek}. Hafta</p>
+                  <p class="text-xs text-gray-500 mt-2">📍 Yaşar Üniversitesi Kampüsü</p>
+                </div>
+                <div class="space-y-4">
+                  <div><label class="block text-sm font-medium text-gray-700 mb-2">Öğrenci Numaranız</label><input type="text" id="regNo" placeholder="Örn: 21070008016" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"></div>
+                  <div><label class="block text-sm font-medium text-gray-700 mb-2">Adınız</label><input type="text" id="regName" placeholder="Örn: CAN" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" style="text-transform:uppercase"></div>
+                  <div><label class="block text-sm font-medium text-gray-700 mb-2">Soyadınız</label><input type="text" id="regSurname" placeholder="Örn: GİRGİN" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" style="text-transform:uppercase"></div>
+                  <div><label class="block text-sm font-medium text-gray-700 mb-2">QR Kod (Tahtadan)</label><input type="text" id="regCode" placeholder="Örn: QRAB3X5Y" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 font-mono text-lg" style="text-transform:uppercase"></div>
+                  <button onclick="handleRegisterClick()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold">Yoklamaya Katıl</button>
+                  <button onclick="backToLogin()" class="w-full bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 transition">Geri Dön</button>
+                </div>
+                ${state.message ? `<div class="mt-4 p-3 rounded-lg text-sm whitespace-pre-line ${state.message.includes('❌') || state.message.includes('⚠️') ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}">${state.message}</div>` : ''}
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg text-xs text-blue-800"><p class="font-semibold">📍 ${LOCATION_CHECK_ENABLED ? 'Konum kontrolü aktif' : '⚠️ TEST MODU - Konum kontrolü kapalı'}</p></div>
+              </div>
+            </div>
+          `;
+        } else {
+          app.innerHTML = `
+            <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+              <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+                <div class="text-center mb-8">
+                  <div class="bg-indigo-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                  </div>
+                  <h1 class="text-3xl font-bold text-gray-800 mb-2">Akıllı Yoklama Sistemi</h1>
+                  <p class="text-gray-600">${dersInfo.dersKodu} - ${dersInfo.dersAdi}</p>
+                  <p class="text-sm text-gray-500 mt-2">📍 Yaşar Üniversitesi</p>
+                </div>
+                <div class="space-y-4">
+                  <div><label class="block text-sm font-medium text-gray-700 mb-2">Email / Öğrenci No</label><input type="text" id="loginEmail" placeholder="ornek@ogrenci.edu.tr" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></div>
+                  <div><label class="block text-sm font-medium text-gray-700 mb-2">Şifre</label><input type="password" id="loginPassword" placeholder="••••••••" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></div>
+                  <button onclick="handleLoginClick()" class="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-semibold">Giriş Yap (Email ile)</button>
+                  <div class="relative"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div><div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-gray-500">veya</span></div></div>
+                  <button onclick="showRegister()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold">Yoklama Yap (No/Ad/Soyad)</button>
+                </div>
+                ${state.message ? `<div class="mt-4 p-3 rounded-lg text-sm ${state.message.includes('❌') ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}">${state.message}</div>` : ''}
+                <div class="mt-6 text-center text-xs text-gray-500 space-y-1">
+                  <p>🔒 ${LOCATION_CHECK_ENABLED ? `Kampüsten ${classLocation.radius}m içinde olmalısınız` : '⚠️ TEST MODU'}</p>
+                  <p class="text-gray-400">Hoca: hoca@universite.edu.tr</p>
+                  <p class="text-gray-400">Toplam ${state.students.length} öğrenci</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      } else if (state.view === 'student') {
+        const attendance = calculateAttendance(state.currentUser);
+        app.innerHTML = `
+          <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+            <div class="max-w-2xl mx-auto">
+              <div class="bg-white rounded-2xl shadow-xl p-6 mb-4">
+                <div class="flex justify-between items-center mb-4">
+                  <div><h2 class="text-2xl font-bold text-gray-800">Yoklama Sistemi</h2><p class="text-gray-600">${state.currentUser.ad} ${state.currentUser.soyad}</p><p class="text-sm text-gray-500">${state.currentUser.no}</p></div>
+                  <button onclick="logout()" class="text-sm text-gray-500 hover:text-gray-700">Çıkış</button>
+                </div>
+                <div class="bg-indigo-50 rounded-xl p-6 mb-6">
+                  <p class="text-center text-gray-700 mb-4"><span class="font-bold text-3xl">${state.currentWeek}. Hafta</span></p>
+                  <p class="text-center text-sm text-gray-600">Hoca QR kodu oluşturduğunda butona basabilirsiniz</p>
+                </div>
+                <button onclick="handleAttendanceClick()" ${!state.qrToken || new Date() > state.qrExpiry ? 'disabled' : ''} class="w-full py-4 rounded-xl transition text-lg font-semibold ${state.qrToken && new Date() <= state.qrExpiry ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}">${state.qrToken && new Date() <= state.qrExpiry ? 'Yoklamaya Katıl' : 'QR Kod Bekleyin'}</button>
+                ${state.message ? `<div class="mt-4 p-4 rounded-lg whitespace-pre-line ${state.message.includes('✅') ? 'bg-green-50 text-green-800' : state.message.includes('❌') ? 'bg-red-50 text-red-800' : 'bg-yellow-50 text-yellow-800'}">${state.message}</div>` : ''}
+              </div>
+              <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Devamsızlık Durumum</h3>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                  <div class="bg-gray-50 rounded-lg p-4"><p class="text-sm text-gray-600 mb-1">Katılım Oranı</p><p class="text-3xl font-bold ${attendance.rate >= 70 ? 'text-green-600' : 'text-red-600'}">%${attendance.rate}</p></div>
+                  <div class="bg-gray-50 rounded-lg p-4"><p class="text-sm text-gray-600 mb-1">Durum</p><p class="text-2xl font-bold ${attendance.rate >= 70 ? 'text-green-600' : 'text-red-600'}">${attendance.status}</p></div>
+                </div>
+                <div class="bg-gray-100 rounded-lg p-4">
+                  <p class="text-sm text-gray-600 mb-2">${state.currentUser.yoklamalar.length} / ${dersInfo.toplamHafta} hafta katıldınız</p>
+                  <div class="flex gap-1">${[...Array(14)].map((_, i) => `<div class="flex-1 h-8 rounded ${state.currentUser.yoklamalar.includes(i + 1) ? 'bg-green-500' : i + 1 <= state.currentWeek ? 'bg-red-500' : 'bg-gray-300'}"></div>`).join('')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (state.view === 'teacher') {
+        const attendedThisWeek = state.students.filter(s => s.yoklamalar.includes(state.currentWeek));
+        const totalAttendance = attendedThisWeek.length;
+        const attendanceRate = ((totalAttendance / state.students.length) * 100).toFixed(1);
+        const teamStats = getTeamStats();
+        
+        app.innerHTML = `
+          <div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-4">
+            <div class="max-w-7xl mx-auto">
+              ${state.showInvalidateModal ? `<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"><div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full"><div class="flex items-center gap-3 mb-4"><svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><h3 class="text-xl font-bold text-gray-800">Yoklamayı İptal Et</h3></div><p class="text-gray-600 mb-6"><strong>${state.selectedStudent?.ad} ${state.selectedStudent?.soyad}</strong> öğrencisinin <strong>${state.currentWeek}. hafta</strong> yoklamasını geçersiz saymak istediğinizden emin misiniz?</p><div class="flex gap-3"><button onclick="confirmInvalidateClick()" class="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-semibold">Evet, Geçersiz Say</button><button onclick="closeModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 font-semibold">İptal</button></div></div></div>` : ''}
+              <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+                  <div><h2 class="text-3xl font-bold text-gray-800">Öğretim Üyesi Paneli</h2><p class="text-gray-600">${dersInfo.dersKodu} - ${dersInfo.dersAdi}</p><p class="text-sm text-gray-500">📍 ${classLocation.name}</p></div>
+                  <div class="flex gap-2"><button onclick="exportToExcel()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Excel İndir</button><button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Çıkış</button></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div class="bg-blue-50 rounded-xl p-4"><p class="text-sm text-gray-600 mb-1">Bu Hafta Katılan</p><p class="text-3xl font-bold text-blue-600">${totalAttendance}</p><p class="text-xs text-gray-500">${state.students.length} öğrenciden</p></div>
+                  <div class="bg-green-50 rounded-xl p-4"><p class="text-sm text-gray-600 mb-1">Katılım Oranı</p><p class="text-3xl font-bold text-green-600">%${attendanceRate}</p><p class="text-xs text-gray-500">Bu hafta</p></div>
+                  <div class="bg-purple-50 rounded-xl p-4"><p class="text-sm text-gray-600 mb-1">Sınıftaki Takımlar</p><p class="text-3xl font-bold text-purple-600">${teamStats.presentTeams}</p><p class="text-xs text-gray-500">${teamStats.totalTeams} takımdan</p></div>
+                  <div class="bg-orange-50 rounded-xl p-4"><label class="block text-sm font-medium text-gray-700 mb-2">Hafta:</label><select id="weekSelect" onchange="changeWeek()" class="w-full p-2 border rounded-lg text-sm">${[...Array(14)].map((_, i) => `<option value="${i + 1}" ${state.currentWeek === i + 1 ? 'selected' : ''}>${i + 1}. Hafta</option>`).join('')}</select></div>
+                </div>
+                <div class="bg-indigo-50 rounded-xl p-6 flex items-center justify-center mb-6">
+                  <button onclick="generateQRCodeClick()" class="bg-indigo-600 text-white px-8 py-4 rounded-xl hover:bg-indigo-700 text-lg font-semibold">QR Kod Oluştur</button>
+                </div>
+                ${state.qrToken && state.timeLeft > 0 ? `<div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 text-center mb-6"><div class="bg-white rounded-xl p-8 inline-block"><div id="qrcode" class="mb-4 flex justify-center"></div><div class="text-2xl font-bold text-gray-800 mb-2">QR KOD</div><div class="bg-gray-100 p-4 rounded-lg font-mono text-2xl mb-4 font-bold text-indigo-600">${state.qrToken}</div><div id="qr-timer" class="text-2xl font-semibold text-indigo-600">⏱️ ${Math.floor(state.timeLeft / 60)}:${(state.timeLeft % 60).toString().padStart(2, '0')}</div></div><p class="text-white mt-4 text-lg font-semibold">Bu kodu tahtaya yansıtın</p></div>` : ''}
+                ${state.message ? `<div class="mt-4 p-4 bg-green-50 text-green-800 rounded-lg font-semibold">${state.message}</div>` : ''}
+              </div>
+              <div class="bg-white rounded-2xl shadow-xl p-6 overflow-x-auto">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-bold text-gray-800">Öğrenci Listesi (${state.students.length} kişi)</h3><div class="flex gap-4 text-sm"><div class="flex items-center gap-2"><div class="w-4 h-4 bg-green-500 rounded"></div><span>Var</span></div><div class="flex items-center gap-2"><div class="w-4 h-4 bg-red-500 rounded"></div><span>Yok</span></div></div></div>
+                <table class="w-full text-xs"><thead><tr class="bg-indigo-600 text-white"><th class="text-left py-2 px-2">No</th><th class="text-left py-2 px-2">Ad Soyad</th><th class="text-left py-2 px-2">Bölüm</th><th class="text-center py-2 px-1">T</th>${[...Array(14)].map((_, i) => `<th class="text-center py-2 px-1">${i + 1}</th>`).join('')}<th class="text-center py-2 px-2">%</th><th class="text-center py-2 px-2">Durum</th><th class="text-center py-2 px-2">İşlem</th></tr></thead><tbody>${state.students.map(student => {
+                  const attendance = calculateAttendance(student);
+                  const attendedThisWeekBool = student.yoklamalar.includes(state.currentWeek);
+                  return `<tr class="border-b hover:bg-gray-50 ${attendance.rowColor}"><td class="py-2 px-2 font-mono text-xs">${student.no}</td><td class="py-2 px-2 font-semibold">${student.ad} ${student.soyad}</td><td class="py-2 px-2 text-xs">${student.bolum}</td><td class="py-2 px-1 text-center font-bold">${student.team}</td>${[...Array(14)].map((_, i) => `<td class="py-2 px-1"><div class="w-5 h-5 rounded mx-auto ${student.yoklamalar.includes(i + 1) ? 'bg-green-500' : 'bg-red-500'}"></div></td>`).join('')}<td class="py-2 px-2 text-center font-bold">${attendance.rate}</td><td class="py-2 px-2 text-center"><span class="px-2 py-1 rounded-full text-xs font-bold ${attendance.color}">${attendance.status}</span></td><td class="py-2 px-2 text-center">${attendedThisWeekBool ? `<button onclick='invalidateAttendanceClick(${JSON.stringify(student)})' class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">İptal</button>` : '<span class="text-gray-400">-</span>'}</td></tr>`;
+                }).join('')}</tbody></table>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        if (state.qrToken && state.timeLeft > 0) {
+          setTimeout(() => {
+            const qrElement = document.getElementById('qrcode');
+            if (qrElement) {
+              qrElement.innerHTML = '';
+              new QRCode(qrElement, { text: state.qrToken, width: 200, height: 200 });
+            }
+          }, 100);
+        }
+      }
+      
+      const regNo = document.getElementById('regNo');
+      const regName = document.getElementById('regName');
+      const regSurname = document.getElementById('regSurname');
+      const regCode = document.getElementById('regCode');
+      const loginEmail = document.getElementById('loginEmail');
+      const loginPassword = document.getElementById('loginPassword');
+      
+      if (regNo) regNo.addEventListener('input', (e) => { state.registerNo = e.target.value; });
+      if (regName) regName.addEventListener('input', (e) => { state.registerName = e.target.value.toUpperCase(); });
+      if (regSurname) regSurname.addEventListener('input', (e) => { state.registerSurname = e.target.value.toUpperCase(); });
+      if (regCode) regCode.addEventListener('input', (e) => { state.registerCode = e.target.value.toUpperCase(); });
+      if (loginEmail) loginEmail.addEventListener('input', (e) => { state.loginEmail = e.target.value; });
+      if (loginPassword) loginPassword.addEventListener('input', (e) => { state.loginPassword = e.target.value; });
+    }
+
+    window.handleRegisterClick = handleRegister;
+    window.handleLoginClick = handleLogin;
+    window.handleAttendanceClick = handleAttendance;
+    window.showRegister = () => { state.registerView = true; state.message = ''; render(); };
+    window.backToLogin = () => { state.registerView = false; state.message = ''; render(); };
+    window.logout = () => { state.view = 'login'; state.currentUser = null; state.message = ''; state.loginEmail = ''; state.loginPassword = ''; render(); };
+    window.generateQRCodeClick = generateQRCode;
+    window.exportToExcel = exportToExcel;
+    window.changeWeek = () => { state.currentWeek = Number(document.getElementById('weekSelect').value); render(); };
+    window.invalidateAttendanceClick = (student) => { invalidateAttendance(student); };
+    window.confirmInvalidateClick = confirmInvalidate;
+    window.closeModal = () => { state.showInvalidateModal = false; state.selectedStudent = null; render(); };
+
+    render();
+  </script>
+</body>
+</html>
