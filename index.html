@@ -226,38 +226,38 @@
     <div id="loginView" class="card">
       <div style="text-align: center; margin-bottom: 30px;">
         <div style="background: #667eea; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px;">📱</div>
-        <h1>Akıllı Yoklama Sistemi</h1>
-        <p style="color: #666; margin-top: 10px;">ENGR 4451 - Mühendislik Uygulamaları İçin Üretken Yapay Zeka</p>
-        <p style="color: #999; font-size: 14px; margin-top: 5px;">📍 Yaşar Üniversitesi</p>
+        <h1 data-i18n="attendanceSystem">Akıllı Yoklama Sistemi</h1>
+        <p style="color: #666; margin-top: 10px;" data-i18n="course">ENGR 4451 - Mühendislik Uygulamaları İçin Üretken Yapay Zeka</p>
+        <p style="color: #999; font-size: 14px; margin-top: 5px;">📍 <span data-i18n="university">Yaşar Üniversitesi</span></p>
       </div>
 
       <div id="emailLogin">
-        <input type="text" id="loginEmail" placeholder="Email (örn: hoca@universite.edu.tr)">
-        <input type="password" id="loginPassword" placeholder="Şifre">
-        <button onclick="handleLogin()">👤 Giriş Yap</button>
-        <div style="text-align: center; margin: 20px 0; color: #999;">veya</div>
-        <button class="btn-green" onclick="showRegisterView()">📝 Yoklama Yap (No/Ad/Soyad)</button>
+        <input type="text" id="loginEmail" data-i18n-placeholder="loginEmail" placeholder="Email (örn: hoca@universite.edu.tr)">
+        <input type="password" id="loginPassword" data-i18n-placeholder="password" placeholder="Şifre">
+        <button onclick="handleLogin()" data-i18n="login">👤 Giriş Yap</button>
+        <div style="text-align: center; margin: 20px 0; color: #999;" data-i18n="or">veya</div>
+        <button class="btn-green" onclick="showRegisterView()" data-i18n="takeAttendance">📝 Yoklama Yap (No/Ad/Soyad)</button>
       </div>
 
       <div id="registerForm" class="hidden">
-        <p style="text-align: center; color: #666; margin-bottom: 20px;">Hafta <strong id="regWeekDisplay">1</strong></p>
-        <input type="text" id="registerNo" placeholder="Öğrenci Numaranız (örn: 21070008016)">
-        <input type="text" id="registerName" placeholder="Adınız (örn: CAN)" style="text-transform: uppercase;">
-        <input type="text" id="registerSurname" placeholder="Soyadınız (örn: GİRGİN)" style="text-transform: uppercase;">
-        <input type="text" id="registerCode" placeholder="QR Kod (tahtadan)" style="text-transform: uppercase; font-family: monospace; font-size: 18px;">
-        <button class="btn-green" onclick="handleRegister()">📍 Yoklamaya Katıl</button>
-        <button class="btn-orange" onclick="showEmailLogin()">⬅️ Geri Dön</button>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;"><span data-i18n="week">Hafta</span> <strong id="regWeekDisplay">1</strong></p>
+        <input type="text" id="registerNo" data-i18n-placeholder="studentNo" placeholder="Öğrenci Numaranız (örn: 21070008016)">
+        <input type="text" id="registerName" data-i18n-placeholder="firstName" placeholder="Adınız (örn: CAN)" style="text-transform: uppercase;">
+        <input type="text" id="registerSurname" data-i18n-placeholder="lastName" placeholder="Soyadınız (örn: GİRGİN)" style="text-transform: uppercase;">
+        <input type="text" id="registerCode" data-i18n-placeholder="qrCode" placeholder="QR Kod (tahtadan)" style="text-transform: uppercase; font-family: monospace; font-size: 18px;">
+        <button class="btn-green" onclick="handleRegister()" data-i18n="submit">📍 Yoklamaya Katıl</button>
+        <button class="btn-orange" onclick="showEmailLogin()" data-i18n="goBack">⬅️ Geri Dön</button>
         <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-top: 15px; font-size: 13px; color: #1565c0;">
-          <strong>📍 Konum Kontrolü:</strong><br>
-          Yaşar Üniversitesi kampüsünden 100m içinde olmalısınız.<br>
-          <small>Kazımdirik Mah. Üniversite Cad. No:37-39 Bornova/İzmir</small>
+          <strong>📍 <span data-i18n="locationInfo">Konum Kontrolü:</span></strong><br>
+          <span data-i18n="campusDistance">Yaşar Üniversitesi kampüsünden 100m içinde olmalısınız.</span><br>
+          <small data-i18n="campusAddress">Kazımdirik Mah. Üniversite Cad. No:37-39 Bornova/İzmir</small>
         </div>
       </div>
 
       <div id="loginMessage" class="message hidden"></div>
       <div style="text-align: center; font-size: 12px; color: #999; margin-top: 20px;">
-        <p>🔒 Kampüsten 100m içinde olmalısınız</p>
-        <p style="margin-top: 5px;">Hoca: hoca@universite.edu.tr</p>
+        <p>🔒 <span data-i18n="campusRestriction">Kampüsten 100m içinde olmalısınız</span></p>
+        <p style="margin-top: 5px;"><span data-i18n="teacher">Hoca</span>: hoca@universite.edu.tr</p>
       </div>
     </div>
 
@@ -567,13 +567,28 @@
 
     function updateLanguage() {
       const lang = translations[currentLang];
+      
+      // data-i18n attribute'leri güncelle
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (lang[key]) el.textContent = lang[key];
+        if (lang[key]) {
+          if (el.tagName === 'INPUT') {
+            el.placeholder = lang[key];
+          } else {
+            el.textContent = lang[key];
+          }
+        }
+      });
+      
+      // data-i18n-placeholder attribute'leri güncelle
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (lang[key]) el.placeholder = lang[key];
       });
       
       // Manuel güncellemeler
       if (currentView === 'teacher') loadTeacherView();
+      if (currentView === 'student') loadStudentView();
     }
 
     // DARK MODE
@@ -1033,6 +1048,7 @@
       xml += '<Style ss:ID="Header"><Font ss:Bold="1"/><Interior ss:Color="#667eea" ss:Pattern="Solid"/></Style>\n';
       xml += '<Style ss:ID="Green"><Interior ss:Color="#48bb78" ss:Pattern="Solid"/><Font ss:Bold="1"/></Style>\n';
       xml += '<Style ss:ID="Red"><Interior ss:Color="#f56565" ss:Pattern="Solid"/><Font ss:Bold="1"/></Style>\n';
+      xml += '<Style ss:ID="Orange"><Interior ss:Color="#f6ad55" ss:Pattern="Solid"/><Font ss:Bold="1"/></Style>\n';
       xml += '<Style ss:ID="Default"><Alignment ss:Horizontal="Center"/></Style>\n';
       xml += '</Styles>\n';
       
@@ -1051,7 +1067,7 @@
       }
       xml += '<Column ss:Width="80"/>\n';  // U: Toplam
       xml += '<Column ss:Width="80"/>\n';  // V: Yüzde
-      xml += '<Column ss:Width="80"/>\n';  // W: Durum
+      xml += '<Column ss:Width="100"/>\n';  // W: Durum
       
       // Header Row
       xml += '<Row>\n';
@@ -1074,6 +1090,7 @@
       // Data Rows
       students.forEach((student, index) => {
         const att = calculateAttendance(student);
+        const rate = parseFloat(att.rate);
         
         xml += '<Row>\n';
         xml += '<Cell ss:StyleID="Default"><Data ss:Type="Number">' + (index + 1) + '</Data></Cell>\n';
@@ -1083,18 +1100,45 @@
         xml += '<Cell ss:StyleID="Default"><Data ss:Type="String">' + student.bolum + '</Data></Cell>\n';
         xml += '<Cell ss:StyleID="Default"><Data ss:Type="Number">' + student.team + '</Data></Cell>\n';
         
-        // Hafta hücreleri - Yeşil (VAR) veya Kırmızı (YOK)
+        // Hafta hücreleri - Sadece geçmiş haftalar için VAR/YOK
         for (let i = 1; i <= 14; i++) {
-          const style = student.yoklamalar.includes(i) ? 'Green' : 'Red';
-          const value = student.yoklamalar.includes(i) ? 'VAR' : 'YOK';
-          xml += '<Cell ss:StyleID="' + style + '"><Data ss:Type="String">' + value + '</Data></Cell>\n';
+          if (i <= currentWeek) {
+            // Geçmiş veya şimdiki hafta - VAR veya YOK
+            const style = student.yoklamalar.includes(i) ? 'Green' : 'Red';
+            const value = student.yoklamalar.includes(i) ? 'VAR' : 'YOK';
+            xml += '<Cell ss:StyleID="' + style + '"><Data ss:Type="String">' + value + '</Data></Cell>\n';
+          } else {
+            // Gelecek haftalar - BOŞ
+            xml += '<Cell ss:StyleID="Default"><Data ss:Type="String"></Data></Cell>\n';
+          }
         }
         
         xml += '<Cell ss:StyleID="Default"><Data ss:Type="Number">' + student.yoklamalar.length + '</Data></Cell>\n';
         xml += '<Cell ss:StyleID="Default"><Data ss:Type="String">%' + att.rate + '</Data></Cell>\n';
         
-        const statusStyle = att.status === 'VAR' ? 'Green' : 'Red';
-        xml += '<Cell ss:StyleID="' + statusStyle + '"><Data ss:Type="String">' + att.status + '</Data></Cell>\n';
+        // Durum kolonu
+        let statusStyle = 'Default';
+        let statusText = '';
+        
+        if (rate < 70) {
+          // %70'in altında - KALDI (Kırmızı)
+          statusStyle = 'Red';
+          statusText = 'KALDI';
+        } else {
+          // %70'in üstünde
+          const remaining = 14 - currentWeek;
+          const maxPossible = student.yoklamalar.length + remaining;
+          const maxRate = (maxPossible / 14) * 100;
+          
+          if (maxRate < 75) {
+            // Risk altında - RİSKLİ (Turuncu)
+            statusStyle = 'Orange';
+            statusText = 'RİSKLİ';
+          }
+          // Aksi halde boş
+        }
+        
+        xml += '<Cell ss:StyleID="' + statusStyle + '"><Data ss:Type="String">' + statusText + '</Data></Cell>\n';
         xml += '</Row>\n';
       });
       
@@ -1108,7 +1152,7 @@
       link.href = URL.createObjectURL(blob);
       link.download = 'ENGR4451_Yoklama_' + new Date().toISOString().split('T')[0] + '.xls';
       link.click();
-      showMessage('teacherMessage', '✅ ' + translations[currentLang].downloadExcel + '!', 'success');
+      showMessage('teacherMessage', '✅ Excel dosyası indirildi!', 'success');
     }
 
     // ÇIKIŞ
