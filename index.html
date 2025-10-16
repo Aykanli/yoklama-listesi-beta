@@ -1089,8 +1089,12 @@
       
       // Data Rows
       students.forEach((student, index) => {
-        const att = calculateAttendance(student);
-        const rate = parseFloat(att.rate);
+        // Geçmiş haftalar için oran hesabı (sadece geçmiş haftalar üzerinden)
+        const attendedPast = student.yoklamalar.filter(h => h <= currentWeek).length;
+        const currentRate = (attendedPast / currentWeek) * 100;
+        
+        // Toplam için oran (14 hafta üzerinden)
+        const totalRate = (student.yoklamalar.length / 14) * 100;
         
         xml += '<Row>\n';
         xml += '<Cell ss:StyleID="Default"><Data ss:Type="Number">' + (index + 1) + '</Data></Cell>\n';
@@ -1103,39 +1107,45 @@
         // Hafta hücreleri - Sadece geçmiş haftalar için VAR/YOK
         for (let i = 1; i <= 14; i++) {
           if (i <= currentWeek) {
-            // Geçmiş veya şimdiki hafta - VAR veya YOK
             const style = student.yoklamalar.includes(i) ? 'Green' : 'Red';
             const value = student.yoklamalar.includes(i) ? 'VAR' : 'YOK';
             xml += '<Cell ss:StyleID="' + style + '"><Data ss:Type="String">' + value + '</Data></Cell>\n';
           } else {
-            // Gelecek haftalar - BOŞ
             xml += '<Cell ss:StyleID="Default"><Data ss:Type="String"></Data></Cell>\n';
           }
         }
         
-        xml += '<Cell ss:StyleID="Default"><Data ss:Type="Number">' + student.yoklamalar.length + '</Data></Cell>\n';
-        xml += '<Cell ss:StyleID="Default"><Data ss:Type="String">%' + att.rate + '</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="Number">' + attendedPast + '</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="String">%' + currentRate.toFixed(1) + '</Data></Cell>\n';
         
-        // Durum kolonu
+        // Durum kolonu - Sadece %70 altına düşme garantisi varsa KALDI
         let statusStyle = 'Default';
         let statusText = '';
         
-        if (rate < 70) {
-          // %70'in altında - KALDI (Kırmızı)
+        const remaining = 14 - currentWeek;
+        const maxPossible = attendedPast + remaining;
+        const maxRate = (maxPossible / 14) * 100;
+        
+        if (maxRate < 70) {
+          // Artık kurtulma şansı yok - KALDI
           statusStyle = 'Red';
           statusText = 'KALDI';
-        } else {
-          // %70'in üstünde
-          const remaining = 14 - currentWeek;
-          const maxPossible = student.yoklamalar.length + remaining;
-          const maxRate = (maxPossible / 14) * 100;
-          
+        } else if (currentRate >= 70) {
+          // Şu an %70'in üstünde
           if (maxRate < 75) {
-            // Risk altında - RİSKLİ (Turuncu)
+            // Ama risk altında
             statusStyle = 'Orange';
             statusText = 'RİSKLİ';
           }
-          // Aksi halde boş
+          // Aksi halde boş (güvende)
+        } else {
+          // Şu an %70'in altında ama kurtulma şansı var
+          if (maxRate < 75) {
+            // Riskli durumda
+            statusStyle = 'Orange';
+            statusText = 'RİSKLİ';
+          }
+          // Aksi halde boş (henüz erken, kurtarabilir)
         }
         
         xml += '<Cell ss:StyleID="' + statusStyle + '"><Data ss:Type="String">' + statusText + '</Data></Cell>\n';
