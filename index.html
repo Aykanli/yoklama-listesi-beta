@@ -6,72 +6,221 @@
   <title>Akıllı Yoklama Sistemi - ENGR 4451</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
+    :root {
+      --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --bg-card: #ffffff;
+      --text-primary: #1a202c;
+      --text-secondary: #718096;
+      --border-color: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e0;
+      --button-primary: #667eea;
+      --button-primary-hover: #5568d3;
+      --button-green: #48bb78;
+      --button-green-hover: #38a169;
+      --button-red: #f56565;
+      --button-red-hover: #e53e3e;
+      --button-orange: #ed8936;
+      --button-orange-hover: #dd6b20;
+      --stat-card-bg: #f7fafc;
+      --table-header: #667eea;
+      --table-border: #e2e8f0;
+      --shadow: rgba(0,0,0,0.1);
+      --info-card-bg: #e3f2fd;
+      --info-card-text: #1565c0;
+    }
+
+    body.dark-mode {
+      --bg-primary: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+      --bg-card: #2d3748;
+      --text-primary: #f7fafc;
+      --text-secondary: #a0aec0;
+      --border-color: #4a5568;
+      --input-bg: #1a202c;
+      --input-border: #4a5568;
+      --button-primary: #805ad5;
+      --button-primary-hover: #6b46c1;
+      --button-green: #48bb78;
+      --button-green-hover: #38a169;
+      --button-red: #fc8181;
+      --button-red-hover: #f56565;
+      --button-orange: #f6ad55;
+      --button-orange-hover: #ed8936;
+      --stat-card-bg: #1a202c;
+      --table-header: #805ad5;
+      --table-border: #4a5568;
+      --shadow: rgba(0,0,0,0.3);
+      --info-card-bg: #2d3748;
+      --info-card-text: #90cdf4;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--bg-primary);
       min-height: 100vh;
       padding: 20px;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
     }
-    .container { max-width: 1400px; margin: 0 auto; }
+    .container { max-width: 1400px; margin: 0 auto; position: relative; }
+    
+    /* Dark Mode Toggle */
+    .dark-mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 50px;
+      padding: 12px 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px var(--shadow);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .dark-mode-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--shadow);
+    }
+    .dark-mode-toggle .icon {
+      font-size: 20px;
+    }
+
     .card { 
-      background: white; 
+      background: var(--bg-card);
       border-radius: 20px; 
       padding: 30px; 
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 60px var(--shadow);
       margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
     }
-    h1, h2, h3 { color: #333; }
+    h1, h2, h3 { color: var(--text-primary); }
     input, select, button { 
       width: 100%; 
       padding: 12px; 
       margin: 10px 0; 
-      border: 2px solid #ddd; 
+      border: 2px solid var(--input-border);
       border-radius: 10px;
       font-size: 16px;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--button-primary);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
     button { 
-      background: #667eea; 
+      background: var(--button-primary);
       color: white; 
       border: none; 
       cursor: pointer;
       font-weight: bold;
       transition: all 0.3s;
     }
-    button:hover { background: #5568d3; transform: translateY(-2px); }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-green { background: #2ecc71; }
-    .btn-green:hover { background: #27ae60; }
-    .btn-red { background: #e74c3c; }
-    .btn-red:hover { background: #c0392b; }
-    .btn-orange { background: #f39c12; }
-    .btn-orange:hover { background: #e67e22; }
+    button:hover { background: var(--button-primary-hover); transform: translateY(-2px); }
+    button:disabled { background: #cbd5e0; cursor: not-allowed; transform: none; }
+    .btn-green { background: var(--button-green); }
+    .btn-green:hover { background: var(--button-green-hover); }
+    .btn-red { background: var(--button-red); }
+    .btn-red:hover { background: var(--button-red-hover); }
+    .btn-orange { background: var(--button-orange); }
+    .btn-orange:hover { background: var(--button-orange-hover); }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .message { padding: 15px; border-radius: 10px; margin: 15px 0; font-weight: bold; white-space: pre-line; }
-    .message.success { background: #d4edda; color: #155724; }
-    .message.error { background: #f8d7da; color: #721c24; }
+    .message { 
+      padding: 15px; 
+      border-radius: 10px; 
+      margin: 15px 0; 
+      font-weight: bold; 
+      white-space: pre-line;
+      border: 2px solid;
+    }
+    .message.success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+    .message.error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
     .hidden { display: none; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-    th { background: #667eea; color: white; position: sticky; top: 0; }
+    th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--table-border); }
+    th { background: var(--table-header); color: white; position: sticky; top: 0; }
     .week-cell { width: 25px; height: 25px; border-radius: 5px; display: inline-block; margin: 2px; }
     .status-badge { padding: 5px 15px; border-radius: 20px; font-weight: bold; display: inline-block; font-size: 11px; }
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 999; }
-    .modal-content { background: white; border-radius: 20px; padding: 30px; max-width: 500px; }
-    #qrDisplay { background: linear-gradient(135deg, #667eea, #764ba2); padding: 40px; border-radius: 15px; text-align: center; color: white; }
+    .modal-content { 
+      background: var(--bg-card);
+      border-radius: 20px; 
+      padding: 30px; 
+      max-width: 500px;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+    #qrDisplay { 
+      background: var(--button-primary);
+      padding: 40px; 
+      border-radius: 15px; 
+      text-align: center; 
+      color: white; 
+    }
     #qrCodeCanvas { background: white; padding: 20px; border-radius: 15px; display: inline-block; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
-    .stat-card { background: #f8f9fa; padding: 20px; border-radius: 15px; text-align: center; }
-    .stat-number { font-size: 36px; font-weight: bold; color: #667eea; }
-    .stat-label { font-size: 14px; color: #666; margin-top: 5px; }
+    .stat-card { 
+      background: var(--stat-card-bg);
+      padding: 20px; 
+      border-radius: 15px; 
+      text-align: center;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px var(--shadow);
+    }
+    .stat-number { font-size: 36px; font-weight: bold; color: var(--button-primary); }
+    .stat-label { font-size: 14px; color: var(--text-secondary); margin-top: 5px; }
+    .info-card {
+      background: var(--info-card-bg);
+      color: var(--info-card-text);
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+    }
+    .info-card h1 {
+      color: var(--info-card-text);
+      font-size: 32px;
+    }
     @media (max-width: 768px) {
       .grid { grid-template-columns: 1fr; }
       table { font-size: 10px; }
       th, td { padding: 4px; }
+      .dark-mode-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+        font-size: 12px;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Dark Mode Toggle -->
+  <div class="dark-mode-toggle" onclick="toggleDarkMode()">
+    <span class="icon" id="modeIcon">☀️</span>
+    <span id="modeText">Aydınlık Mod</span>
+  </div>
+
+  <!-- Language Toggle -->
+  <div class="dark-mode-toggle" onclick="toggleLanguage()" style="top: 80px;">
+    <span class="icon">🌐</span>
+    <span id="langText">Türkçe</span>
+  </div>
+
   <div class="container">
     <!-- LOGIN VIEW -->
     <div id="loginView" class="card">
@@ -123,10 +272,10 @@
           <button class="btn-red" onclick="logout()" style="width: auto; padding: 10px 20px;">🚪 Çıkış</button>
         </div>
 
-        <div style="background: #e3f2fd; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 20px;">
+        <div class="info-card" style="margin-bottom: 20px;">
           <h1 id="currentWeekStudent">1. Hafta</h1>
-          <p style="color: #666; margin-top: 10px;">Hoca QR kodu oluşturduğunda katılabilirsiniz</p>
-          <p style="font-size: 12px; color: #999; margin-top: 5px;">📍 Kampüsten 100m içinde olmalısınız</p>
+          <p style="margin-top: 10px;">Hoca QR kodu oluşturduğunda katılabilirsiniz</p>
+          <p style="font-size: 12px; opacity: 0.8; margin-top: 5px;">📍 Kampüsten 100m içinde olmalısınız</p>
         </div>
 
         <button id="attendBtn" class="btn-green" onclick="handleStudentAttendance()" disabled style="padding: 20px; font-size: 18px;">
@@ -135,15 +284,15 @@
 
         <div id="studentMessage" class="message hidden"></div>
 
-        <div style="margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 15px;">
-          <h3>Devamsızlık Durumum</h3>
+        <div class="stat-card" style="margin-top: 20px;">
+          <h3 style="margin-bottom: 15px;">Devamsızlık Durumum</h3>
           <div class="grid" style="margin-top: 15px;">
             <div style="text-align: center;">
-              <div style="font-size: 14px; color: #666;">Katılım Oranı</div>
+              <div style="font-size: 14px; color: var(--text-secondary);">Katılım Oranı</div>
               <div id="studentRate" style="font-size: 36px; font-weight: bold; color: #2ecc71;">%0</div>
             </div>
             <div style="text-align: center;">
-              <div style="font-size: 14px; color: #666;">Durum</div>
+              <div style="font-size: 14px; color: var(--text-secondary);">Durum</div>
               <div id="studentStatus" style="font-size: 28px; font-weight: bold; color: #e74c3c;">YOK</div>
             </div>
           </div>
@@ -213,12 +362,14 @@
         </div>
 
         <div id="qrDisplay" class="hidden" style="margin-top: 20px;">
-          <div id="qrCodeCanvas" style="background: white; padding: 30px; border-radius: 15px; display: inline-block;"></div>
-          <div style="background: white; padding: 20px; border-radius: 15px; margin-top: 20px; display: inline-block;">
-            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Manuel Kod:</div>
-            <div id="qrTokenText" style="font-family: monospace; font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 3px;"></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+            <div id="qrCodeCanvas" style="background: white; padding: 30px; border-radius: 15px;"></div>
+            <div style="background: white; padding: 20px; border-radius: 15px; width: 100%; max-width: 350px;">
+              <div style="font-size: 14px; color: #666; margin-bottom: 5px;" data-i18n="manualCode">Manuel Kod:</div>
+              <div id="qrTokenText" style="font-family: monospace; font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 3px; text-align: center;"></div>
+            </div>
           </div>
-          <p style="margin-top: 20px; font-size: 18px; font-weight: bold;">Bu QR kodu tahtaya yansıtın</p>
+          <p style="margin-top: 20px; font-size: 18px; font-weight: bold;" data-i18n="projectQR">Bu QR kodu tahtaya yansıtın</p>
           <p id="qrTimer" style="font-size: 24px; margin-top: 10px;">⏱️ 10:00</p>
         </div>
 
@@ -279,6 +430,173 @@
   </div>
 
   <script>
+    // TRANSLATIONS
+    const translations = {
+      tr: {
+        lightMode: 'Aydınlık Mod',
+        darkMode: 'Karanlık Mod',
+        turkish: 'Türkçe',
+        english: 'English',
+        attendanceSystem: 'Akıllı Yoklama Sistemi',
+        course: 'Mühendislik Uygulamaları İçin Üretken Yapay Zeka',
+        university: 'Yaşar Üniversitesi',
+        loginEmail: 'Email / Öğrenci No',
+        password: 'Şifre',
+        login: 'Giriş Yap',
+        or: 'veya',
+        takeAttendance: 'Yoklama Yap (No/Ad/Soyad)',
+        week: 'Hafta',
+        studentNo: 'Öğrenci Numaranız',
+        firstName: 'Adınız',
+        lastName: 'Soyadınız',
+        qrCode: 'QR Kod (tahtadan)',
+        submit: 'Yoklamaya Katıl',
+        goBack: 'Geri Dön',
+        locationInfo: 'Konum Kontrolü:',
+        campusDistance: 'Yaşar Üniversitesi kampüsünden 100m içinde olmalısınız.',
+        campusAddress: 'Kazımdirik Mah. Üniversite Cad. No:37-39 Bornova/İzmir',
+        campusRestriction: 'Kampüsten 100m içinde olmalısınız',
+        teacher: 'Hoca',
+        totalStudents: 'Toplam Öğrenci',
+        teacherPanel: 'Akademisyen Paneli',
+        campus: 'Yaşar Üniversitesi, Selçuk Yaşar Kampüsü',
+        downloadExcel: 'Excel İndir',
+        logout: 'Çıkış',
+        attendedThisWeek: 'Bu Hafta Katılan',
+        averageAttendance: 'Ortalama Katılım',
+        activeTeams: 'Aktif Takım',
+        selectWeek: 'Hafta Seçin:',
+        generateQR: 'QR Kod Oluştur',
+        manualCode: 'Manuel Kod:',
+        projectQR: 'Bu QR kodu tahtaya yansıtın',
+        studentList: 'Öğrenci Listesi ve Yoklama Durumu',
+        present: 'Var',
+        absent: 'Yok',
+        notYet: 'Henüz Gelmedi',
+        atRisk: 'Risk Altında',
+        department: 'Bölüm',
+        team: 'Takım',
+        total: 'Toplam',
+        rate: 'Oran',
+        status: 'Durum',
+        action: 'İşlem',
+        cancel: 'İptal',
+        cancelAttendance: 'Yoklamayı İptal Et',
+        confirmCancel: 'öğrencisinin',
+        weekAttendance: 'hafta yoklamasını geçersiz saymak istediğinizden emin misiniz?',
+        yesCancel: 'Evet, İptal Et',
+        noCancel: 'Vazgeç',
+        attendancePanel: 'Yoklama Sistemi',
+        absenceStatus: 'Devamsızlık Durumum',
+        attendanceRate: 'Katılım Oranı',
+        weeksAttended: 'hafta katıldınız',
+        qrWait: 'Hoca QR kodu oluşturduğunda katılabilirsiniz',
+        locationRequired: 'Kampüsten 100m içinde olmalısınız'
+      },
+      en: {
+        lightMode: 'Light Mode',
+        darkMode: 'Dark Mode',
+        turkish: 'Türkçe',
+        english: 'English',
+        attendanceSystem: 'Smart Attendance System',
+        course: 'Generative AI for Engineering Applications',
+        university: 'Yasar University',
+        loginEmail: 'Email / Student No',
+        password: 'Password',
+        login: 'Login',
+        or: 'or',
+        takeAttendance: 'Take Attendance (No/Name/Surname)',
+        week: 'Week',
+        studentNo: 'Your Student Number',
+        firstName: 'Your First Name',
+        lastName: 'Your Last Name',
+        qrCode: 'QR Code (from board)',
+        submit: 'Submit Attendance',
+        goBack: 'Go Back',
+        locationInfo: 'Location Check:',
+        campusDistance: 'You must be within 100m of Yasar University campus.',
+        campusAddress: 'Kazımdirik District, University Ave. No:37-39 Bornova/Izmir',
+        campusRestriction: 'Must be within 100m of campus',
+        teacher: 'Teacher',
+        totalStudents: 'Total Students',
+        teacherPanel: 'Faculty Panel',
+        campus: 'Yasar University, Selcuk Yasar Campus',
+        downloadExcel: 'Download Excel',
+        logout: 'Logout',
+        attendedThisWeek: 'Attended This Week',
+        averageAttendance: 'Average Attendance',
+        activeTeams: 'Active Teams',
+        selectWeek: 'Select Week:',
+        generateQR: 'Generate QR',
+        manualCode: 'Manual Code:',
+        projectQR: 'Project this QR code on board',
+        studentList: 'Student List and Attendance Status',
+        present: 'Present',
+        absent: 'Absent',
+        notYet: 'Not Yet',
+        atRisk: 'At Risk',
+        department: 'Department',
+        team: 'Team',
+        total: 'Total',
+        rate: 'Rate',
+        status: 'Status',
+        action: 'Action',
+        cancel: 'Cancel',
+        cancelAttendance: 'Cancel Attendance',
+        confirmCancel: 'student\'s',
+        weekAttendance: 'week attendance. Are you sure?',
+        yesCancel: 'Yes, Cancel',
+        noCancel: 'No',
+        attendancePanel: 'Attendance System',
+        absenceStatus: 'My Absence Status',
+        attendanceRate: 'Attendance Rate',
+        weeksAttended: 'weeks attended',
+        qrWait: 'You can join when teacher generates QR code',
+        locationRequired: 'Must be within 100m of campus'
+      }
+    };
+
+    let currentLang = localStorage.getItem('language') || 'tr';
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'tr' ? 'en' : 'tr';
+      localStorage.setItem('language', currentLang);
+      document.getElementById('langText').textContent = currentLang === 'tr' ? 'Türkçe' : 'English';
+      updateLanguage();
+    }
+
+    function updateLanguage() {
+      const lang = translations[currentLang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (lang[key]) el.textContent = lang[key];
+      });
+      
+      // Manuel güncellemeler
+      if (currentView === 'teacher') loadTeacherView();
+    }
+
+    // DARK MODE
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isDark);
+      document.getElementById('modeIcon').textContent = isDark ? '🌙' : '☀️';
+      document.getElementById('modeText').textContent = isDark ? translations[currentLang].darkMode : translations[currentLang].lightMode;
+    }
+
+    // Sayfa yüklendiğinde tercihler
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+      if (savedDarkMode) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('modeIcon').textContent = '🌙';
+      }
+      document.getElementById('modeText').textContent = savedDarkMode ? translations[currentLang].darkMode : translations[currentLang].lightMode;
+      document.getElementById('langText').textContent = currentLang === 'tr' ? 'Türkçe' : 'English';
+      updateLanguage();
+    });
+
     // GLOBAL VARIABLES
     let currentView = 'login';
     let currentUser = null;
@@ -699,39 +1017,98 @@
       selectedStudent = null;
     }
 
-    // EXCEL EXPORT
+    // EXCEL EXPORT - Excel formatında, renkli hücreler
     function exportToExcel() {
-      let csv = '\ufeff';
-      csv += 'Öğrenci No\tAd\tSoyad\tBölüm\tTakım\t';
+      // Excel için XML formatı (SpreadsheetML)
+      let xml = '<?xml version="1.0"?>\n';
+      xml += '<?mso-application progid="Excel.Sheet"?>\n';
+      xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n';
+      xml += ' xmlns:o="urn:schemas-microsoft-com:office:office"\n';
+      xml += ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n';
+      xml += ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n';
+      xml += ' xmlns:html="http://www.w3.org/TR/REC-html40">\n';
+      
+      // Styles
+      xml += '<Styles>\n';
+      xml += '<Style ss:ID="Header"><Font ss:Bold="1"/><Interior ss:Color="#667eea" ss:Pattern="Solid"/></Style>\n';
+      xml += '<Style ss:ID="Green"><Interior ss:Color="#48bb78" ss:Pattern="Solid"/><Font ss:Bold="1"/></Style>\n';
+      xml += '<Style ss:ID="Red"><Interior ss:Color="#f56565" ss:Pattern="Solid"/><Font ss:Bold="1"/></Style>\n';
+      xml += '<Style ss:ID="Default"><Alignment ss:Horizontal="Center"/></Style>\n';
+      xml += '</Styles>\n';
+      
+      xml += '<Worksheet ss:Name="Yoklama">\n';
+      xml += '<Table>\n';
+      
+      // Sütun genişlikleri
+      xml += '<Column ss:Width="80"/>\n';  // A: Sıra
+      xml += '<Column ss:Width="100"/>\n'; // B: Öğrenci No
+      xml += '<Column ss:Width="120"/>\n'; // C: Ad
+      xml += '<Column ss:Width="120"/>\n'; // D: Soyad
+      xml += '<Column ss:Width="150"/>\n'; // E: Bölüm
+      xml += '<Column ss:Width="60"/>\n';  // F: Takım
+      for (let i = 0; i < 14; i++) {
+        xml += '<Column ss:Width="70"/>\n'; // G-T: Haftalar
+      }
+      xml += '<Column ss:Width="80"/>\n';  // U: Toplam
+      xml += '<Column ss:Width="80"/>\n';  // V: Yüzde
+      xml += '<Column ss:Width="80"/>\n';  // W: Durum
+      
+      // Header Row
+      xml += '<Row>\n';
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Sıra</Data></Cell>\n';
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Öğrenci No</Data></Cell>\n';
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Ad</Data></Cell>\n';
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Soyad</Data></Cell>\n';
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Bölüm</Data></Cell>\n';
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Takım</Data></Cell>\n';
       
       for (let i = 1; i <= 14; i++) {
-        csv += 'Hafta ' + i + '\t';
+        xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Hafta ' + i + '</Data></Cell>\n';
       }
-      csv += 'Toplam Katılım\tKatılım Oranı\tDurum\n';
       
-      students.forEach(student => {
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Toplam Katılım</Data></Cell>\n';
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Katılım Oranı</Data></Cell>\n';
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">Durum</Data></Cell>\n';
+      xml += '</Row>\n';
+      
+      // Data Rows
+      students.forEach((student, index) => {
         const att = calculateAttendance(student);
-        csv += student.no + '\t';
-        csv += student.ad + '\t';
-        csv += student.soyad + '\t';
-        csv += student.bolum + '\t';
-        csv += student.team + '\t';
         
+        xml += '<Row>\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="Number">' + (index + 1) + '</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="String">' + student.no + '</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="String">' + student.ad + '</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="String">' + student.soyad + '</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="String">' + student.bolum + '</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="Number">' + student.team + '</Data></Cell>\n';
+        
+        // Hafta hücreleri - Yeşil (VAR) veya Kırmızı (YOK)
         for (let i = 1; i <= 14; i++) {
-          csv += (student.yoklamalar.includes(i) ? 'VAR' : 'YOK') + '\t';
+          const style = student.yoklamalar.includes(i) ? 'Green' : 'Red';
+          const value = student.yoklamalar.includes(i) ? 'VAR' : 'YOK';
+          xml += '<Cell ss:StyleID="' + style + '"><Data ss:Type="String">' + value + '</Data></Cell>\n';
         }
         
-        csv += student.yoklamalar.length + '\t';
-        csv += '%' + att.rate + '\t';
-        csv += att.status + '\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="Number">' + student.yoklamalar.length + '</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Default"><Data ss:Type="String">%' + att.rate + '</Data></Cell>\n';
+        
+        const statusStyle = att.status === 'VAR' ? 'Green' : 'Red';
+        xml += '<Cell ss:StyleID="' + statusStyle + '"><Data ss:Type="String">' + att.status + '</Data></Cell>\n';
+        xml += '</Row>\n';
       });
       
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      xml += '</Table>\n';
+      xml += '</Worksheet>\n';
+      xml += '</Workbook>';
+      
+      // İndir
+      const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'yoklama_' + COURSE_CODE.replace(' ', '_') + '_' + new Date().toISOString().split('T')[0] + '.csv';
+      link.download = 'ENGR4451_Yoklama_' + new Date().toISOString().split('T')[0] + '.xls';
       link.click();
-      showMessage('teacherMessage', '✅ Excel dosyası indirildi!', 'success');
+      showMessage('teacherMessage', '✅ ' + translations[currentLang].downloadExcel + '!', 'success');
     }
 
     // ÇIKIŞ
